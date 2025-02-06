@@ -8,7 +8,11 @@
     <!-- TODO: Update blank fragment layout -->
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:text="budget fragment" />
+        android:layout_height="match_parent"
+        android:text="budget fragment"
+        android:textSize="30sp"
+        android:textColor="@color/blue"
+        android:layout_gravity="center"
+        android:gravity="center"/>
 
 </FrameLayout>
