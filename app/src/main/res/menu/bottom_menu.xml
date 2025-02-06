@@ -3,13 +3,15 @@
 
 
     <item
+        android:id="@+id/bottom_trends"
+        android:title="Trends"
+        android:icon="@drawable/trendup"/>
+
+    <item
         android:id="@+id/bottom_home"
         android:title="Home"
         android:icon="@drawable/home" />
-    <item
-        android:id="@+id/bottom_trends"
-        android:title="Trends"
-        android:icon="@drawable/trendup" />
+
     <item
         android:id="@+id/bottom_budget"
         android:title="Budget"
