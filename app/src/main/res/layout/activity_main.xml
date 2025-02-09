@@ -15,19 +15,67 @@
         app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Button Container (Initially Hidden) -->
+        <LinearLayout
+            android:id="@+id/fab_menu_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="end|bottom"
+            android:layout_marginEnd="20dp"
+            android:layout_marginBottom="90dp"
+            android:visibility="gone">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_option_income"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="+"
+                android:textSize="30sp"
+                android:textColor="@color/grey"
+                android:background="@drawable/rounded_square_button"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:layout_marginBottom="18dp"
+                android:clickable="true"
+                />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_option_expense"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:text="-"
+                android:textSize="30sp"
+                android:textColor="@color/grey"
+                android:background="@drawable/rounded_square_button"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:padding="0dp"
+                android:clickable="true"
+                />
+
+
+        </LinearLayout>
+
+        <!-- Floating Action Button -->
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/green"
-
             android:layout_gravity="end|bottom"
             android:layout_margin="10dp"
             android:src="@drawable/baseline_keyboard_arrow_up_24"
-            android:tint="@color/gray"
+            android:tint="@color/grey"
 
             />
     </FrameLayout>
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
@@ -38,14 +86,15 @@
         app:itemIconSize="24dp"
         app:itemTextAppearanceActive="@style/BottomNavTextActive"
         app:itemTextAppearanceInactive="@style/BottomNavTextInactive"
-        app:itemIconTint="@color/gray"
-        app:itemTextColor="@color/gray"
+        app:itemIconTint="@color/grey"
+        app:itemTextColor="@color/grey"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:menu="@menu/bottom_menu"
         app:itemPadding="0dp"
         app:itemHorizontalTranslationEnabled="false"
+
 
         />
 
