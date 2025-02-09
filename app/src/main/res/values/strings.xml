@@ -2,4 +2,12 @@
     <string name="app_name">MoneyGlitch_Kotlin</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="categories">
+        <item>Salary</item>
+        <item>Student Loan</item>
+        <item>Scholarship</item>
+        <item>Part-time Job</item>
+        <item>Gift</item>
+        <item>Other</item>
+    </string-array>
 </resources>
