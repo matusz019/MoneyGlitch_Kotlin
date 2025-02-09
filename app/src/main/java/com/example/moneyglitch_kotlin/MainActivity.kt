@@ -15,16 +15,19 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
 
         bottomNavigationView = findViewById(R.id.bottom_navigation)
         bottomNavigationView.setOnItemSelectedListener { menuItem ->
@@ -64,13 +67,13 @@ class MainActivity : AppCompatActivity() {
 
         val fabIncome: View = findViewById(R.id.btn_option_income)
         fabIncome.setOnClickListener {
-            replaceFragment(IncomeFragment())
+            openTransactionFragment("income")
             clearBottomNavSelection()
         }
 
         val fabExpense: View = findViewById(R.id.btn_option_expense)
         fabExpense.setOnClickListener {
-            replaceFragment(ExpenseFragment())
+            openTransactionFragment("expense")
             clearBottomNavSelection()
         }
     }
@@ -88,4 +91,17 @@ class MainActivity : AppCompatActivity() {
         }
         bottomNavigationView.menu.setGroupCheckable(0, true, true) // Re-enable checkable state
     }
+
+    private fun openTransactionFragment(type: String) {
+        val fragment = TransactionFragment()
+        val bundle = Bundle()
+        bundle.putString("type", type)  // Attach "type" to bundle
+        fragment.arguments = bundle
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frame_container, fragment)
+            .addToBackStack(null)  // Allows back navigation
+            .commit()
+    }
+
 }
