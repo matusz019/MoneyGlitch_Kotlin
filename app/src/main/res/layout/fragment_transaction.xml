@@ -10,8 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:hint="Enter Amount"
-        android:textSize="20sp"
-        android:inputType="numberDecimal" />
+        android:inputType="numberDecimal"
+        android:textColorHint="#78909C"
+        android:textSize="20sp" />
 
     <Spinner
         android:id="@+id/spinner_category"
@@ -24,24 +25,27 @@
         android:id="@+id/et_date"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:hint="Select Date"
-        android:textSize="20sp"
+        android:clickable="true"
         android:focusable="false"
-        android:clickable="true" />
+        android:hint="Select Date"
+        android:textColorHint="#78909C"
+        android:textSize="20sp" />
 
     <EditText
         android:id="@+id/et_description"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:hint="Description (Optional)"
+        android:imeOptions="actionDone"
+        android:textColorHint="#78909C"
         android:textSize="20sp" />
 
     <Button
         android:id="@+id/btn_submit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Submit"
+        android:layout_marginTop="24dp"
         android:backgroundTint="@color/green"
-        android:textColor="@color/white"
-        android:layout_marginTop="24dp"/>
+        android:text="Submit"
+        android:textColor="@color/grey" />
 </LinearLayout>

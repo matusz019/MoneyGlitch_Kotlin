@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.bottom_home -> {
                     replaceFragment(HomeFragment())
+
                     true
                 }
                 R.id.bottom_budget -> {
@@ -68,12 +69,16 @@ class MainActivity : AppCompatActivity() {
         val fabIncome: View = findViewById(R.id.btn_option_income)
         fabIncome.setOnClickListener {
             openTransactionFragment("income")
+            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+            isFabMenuOpen = false
             clearBottomNavSelection()
         }
 
         val fabExpense: View = findViewById(R.id.btn_option_expense)
         fabExpense.setOnClickListener {
             openTransactionFragment("expense")
+            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+            isFabMenuOpen = false
             clearBottomNavSelection()
         }
     }
