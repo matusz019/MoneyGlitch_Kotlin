@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
@@ -15,10 +16,10 @@ interface TransactionDao {
     suspend fun deleteTransaction(transaction: Transaction)
 
     @Query("SELECT * FROM transactions WHERE type = :type")
-    suspend fun getTransactionsByType(type: String): List<Transaction>
+    suspend fun getTransactionsByType(type: String): Flow<List<Transaction>>
 
     @Query("SELECT * FROM transactions")
-    suspend fun getAllTransactions(): List<Transaction>
+    suspend fun getAllTransactions(): Flow<List<Transaction>>
 
 
 
