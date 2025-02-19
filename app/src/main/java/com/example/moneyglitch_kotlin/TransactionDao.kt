@@ -16,10 +16,10 @@ interface TransactionDao {
     suspend fun deleteTransaction(transaction: Transaction)
 
     @Query("SELECT * FROM transactions WHERE type = :type")
-    suspend fun getTransactionsByType(type: String): Flow<List<Transaction>>
+    fun getTransactionsByType(type: String): Flow<List<Transaction>>
 
     @Query("SELECT * FROM transactions")
-    suspend fun getAllTransactions(): Flow<List<Transaction>>
+    fun getAllTransactions(): Flow<List<Transaction>>
 
 
 

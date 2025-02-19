@@ -14,6 +14,9 @@ import androidx.fragment.app.Fragment
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TransactionFragment : Fragment() {
 
@@ -106,10 +109,24 @@ class TransactionFragment : Fragment() {
     }
 
     private fun saveTransaction() {
-        val amount = etAmount.text.toString().toDoubleOrNull() ?: 0.0
+        val amount = etAmount.text.toString().toDoubleOrNull() ?: return
         val date = etDate.text.toString()
         val description = etDescription.text.toString()
         val category = spinnerCategory.selectedItem.toString()
+
+        val transaction = Transaction(
+            amount = amount,
+            date = date,
+            description = description,
+            category = category,
+            type = transactionType
+        )
+
+        // Save transaction using a coroutine
+        lifecycleScope.launch(Dispatchers.IO) {
+            val db = (requireActivity().application as MoneyGlitchApp).database
+            db.dao.upsertTransaction(transaction)
+        }
 
         Toast.makeText(requireContext(), "$transactionType saved: $amount - $category", Toast.LENGTH_SHORT).show()
 
