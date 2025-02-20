@@ -18,8 +18,8 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions WHERE type = :type")
     fun getTransactionsByType(type: String): Flow<List<Transaction>>
 
-    @Query("SELECT * FROM transactions")
-    fun getAllTransactions(): Flow<List<Transaction>>
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    fun getAllTransactionsDateDescending(): Flow<List<Transaction>>
 
 
 
