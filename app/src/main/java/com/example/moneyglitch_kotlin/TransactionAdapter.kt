@@ -10,6 +10,7 @@ class TransactionAdapter(private var transactions: List<Transaction>) :
     RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
 
     class TransactionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val txtCategory: TextView = view.findViewById(R.id.txtCategory)
         val txtDescription: TextView = view.findViewById(R.id.txtDescription)
         val txtAmount: TextView = view.findViewById(R.id.txtAmount)
         val txtDate: TextView = view.findViewById(R.id.txtDate)
@@ -23,6 +24,7 @@ class TransactionAdapter(private var transactions: List<Transaction>) :
 
     override fun onBindViewHolder(holder: TransactionViewHolder, position: Int) {
         val transaction = transactions[position]
+        holder.txtCategory.text = transaction.category
         holder.txtDescription.text = transaction.description
         holder.txtAmount.text = "£${transaction.amount}"
         holder.txtDate.text = transaction.date
