@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.ContextCompat
 
 class TransactionAdapter(private var transactions: List<Transaction>) :
     RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
@@ -28,6 +29,15 @@ class TransactionAdapter(private var transactions: List<Transaction>) :
         holder.txtDescription.text = transaction.description
         holder.txtAmount.text = "£${transaction.amount}"
         holder.txtDate.text = transaction.date
+
+        // Determine background color based on transaction type
+        val colorRes = if (transaction.type == "income") {
+            R.color.income_colour
+        } else {
+            R.color.expense_colour
+        }
+        val color = ContextCompat.getColor(holder.itemView.context, colorRes)
+        holder.itemView.setBackgroundColor(color)
     }
 
     override fun getItemCount(): Int = transactions.size
