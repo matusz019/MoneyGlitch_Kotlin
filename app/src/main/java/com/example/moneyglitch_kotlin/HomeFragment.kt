@@ -1,5 +1,3 @@
-package com.example.moneyglitch_kotlin
-
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +6,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.coroutines.flow.collect
+import com.example.moneyglitch_kotlin.MoneyGlitchApp
+import com.example.moneyglitch_kotlin.R
+import com.example.moneyglitch_kotlin.TransactionAdapter
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
@@ -21,14 +21,18 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_home, container, false)
-
         recyclerView = view.findViewById(R.id.recyclerViewTransactions)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        adapter = TransactionAdapter(emptyList())
+
+        // Pass the remove callback to the adapter
+        adapter = TransactionAdapter(emptyList()) { transaction ->
+            // Remove transaction from the database in a coroutine
+            lifecycleScope.launch {
+                (requireActivity().application as MoneyGlitchApp).database.dao.deleteTransaction(transaction)
+            }
+        }
         recyclerView.adapter = adapter
-
         fetchTransactions()
-
         return view
     }
 
