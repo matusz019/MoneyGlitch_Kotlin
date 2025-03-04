@@ -54,4 +54,7 @@ dependencies {
 
     //trendsFragment
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    //budgetFragment
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }
