@@ -13,6 +13,7 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
+import com.github.mikephil.charting.formatter.ValueFormatter
 
 class BudgetFragment : Fragment() {
 
@@ -54,9 +55,17 @@ class BudgetFragment : Fragment() {
 
                 val dataSet = PieDataSet(entries, "Spending by Category")
                 dataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
+
                 val pieData = PieData(dataSet)
                 pieData.setValueTextSize(12f)
                 pieData.setValueTextColor(Color.BLACK)
+
+                // Set Value Formatter to show percentage sign
+                pieData.setValueFormatter(object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        return String.format("%.1f%%", value)
+                    }
+                })
 
                 pieChart.data = pieData
                 pieChart.invalidate() // Refresh chart
