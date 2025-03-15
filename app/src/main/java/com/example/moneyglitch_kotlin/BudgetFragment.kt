@@ -5,25 +5,33 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.CheckBox
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.github.mikephil.charting.utils.ColorTemplate
 import com.github.mikephil.charting.formatter.ValueFormatter
-import kotlinx.coroutines.flow.collect
+import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class BudgetFragment : Fragment() {
 
     private lateinit var pieChart: PieChart
     private lateinit var categoryContainer: LinearLayout
     private lateinit var spinnerTimeRange: Spinner
+    private lateinit var txtTotalIncome: TextView
+    private lateinit var txtTotalExpense: TextView
+    private lateinit var txtTotalChange: TextView
 
     private var categoryFilters = mutableSetOf<String>()
     private var allCategories = mutableSetOf<String>()
@@ -39,6 +47,9 @@ class BudgetFragment : Fragment() {
         pieChart = view.findViewById(R.id.pieChart)
         categoryContainer = view.findViewById(R.id.categoryContainer)
         spinnerTimeRange = view.findViewById(R.id.spinnerTimeRange)
+        txtTotalIncome = view.findViewById(R.id.txtTotalIncome)
+        txtTotalExpense = view.findViewById(R.id.txtTotalExpense)
+        txtTotalChange = view.findViewById(R.id.txtTotalChange)
 
         setupPieChart()
         setupTimeRangeSpinner()
@@ -78,7 +89,7 @@ class BudgetFragment : Fragment() {
         val db = (requireActivity().application as MoneyGlitchApp).database
 
         lifecycleScope.launch {
-            db.dao.getTransactionsByType("expense").collect { fetchedTransactions ->
+            db.dao.getAllTransactionsDateDescending().collect { fetchedTransactions ->
                 transactions = fetchedTransactions
                 allCategories = transactions.map { it.category }.toMutableSet()
                 categoryFilters.addAll(allCategories)
@@ -134,13 +145,34 @@ class BudgetFragment : Fragment() {
 
         pieChart.data = pieData
         pieChart.invalidate()
+
+        // Update total income, expenses, and total change
+        updateTotalAmounts()
+    }
+
+    private fun updateTotalAmounts() {
+        val filteredTransactions = filterTransactionsByTime(transactions)
+
+        val totalIncome = filteredTransactions.filter { it.type == "income" }.sumOf { it.amount }
+        val totalExpense = filteredTransactions.filter { it.type == "expense" }.sumOf { it.amount }
+        val totalChange = totalIncome - totalExpense
+
+        txtTotalIncome.text = "Total Income: £%.2f".format(totalIncome)
+        txtTotalExpense.text = "Total Spent: £%.2f".format(totalExpense)
+        txtTotalChange.text = "Total Change: £%.2f".format(totalChange)
+
+        // Set color based on positive/negative value
+        txtTotalChange.setTextColor(
+            if (totalChange >= 0) Color.parseColor("#388E3C") // Green for positive
+            else Color.parseColor("#D32F2F") // Red for negative
+        )
     }
 
     private fun filterTransactionsByTime(transactions: List<Transaction>): List<Transaction> {
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
-        val filteredTransactions = when (selectedTimeRange) {
+        return when (selectedTimeRange) {
             "This Month" -> {
                 calendar.set(Calendar.DAY_OF_MONTH, 1)
                 val startDate = dateFormat.format(calendar.time)
@@ -150,10 +182,8 @@ class BudgetFragment : Fragment() {
                 calendar.add(Calendar.MONTH, -1)
                 calendar.set(Calendar.DAY_OF_MONTH, 1)
                 val startDate = dateFormat.format(calendar.time)
-
                 calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
                 val endDate = dateFormat.format(calendar.time)
-
                 transactions.filter { it.date in startDate..endDate }
             }
             "Last 6 Months" -> {
@@ -168,7 +198,5 @@ class BudgetFragment : Fragment() {
             }
             else -> transactions
         }
-
-        return filteredTransactions
     }
 }
