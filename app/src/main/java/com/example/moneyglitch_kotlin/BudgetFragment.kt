@@ -101,8 +101,19 @@ class BudgetFragment : Fragment() {
     }
 
     private fun setupCategoryFilters() {
-        categoryContainer.removeAllViews()
+        categoryContainer.removeAllViews() // Clear previous checkboxes
 
+        // Get only the expense categories
+        val expenseCategories = transactions
+            .filter { it.type == "expense" }
+            .map { it.category }
+            .toSet() // Convert to a set to remove duplicates
+
+        allCategories = expenseCategories.toMutableSet() // Update allCategories to only include expenses
+        categoryFilters.clear()
+        categoryFilters.addAll(expenseCategories) // Ensure checkboxes only include expenses
+
+        // Create checkboxes for expense categories only
         allCategories.forEach { category ->
             val checkBox = CheckBox(requireContext()).apply {
                 text = category
@@ -120,8 +131,11 @@ class BudgetFragment : Fragment() {
         }
     }
 
+
     private fun updatePieChart() {
-        val filteredTransactions = filterTransactionsByTime(transactions).filter { it.category in categoryFilters }
+        // Filter transactions to include only expenses
+        val filteredTransactions = filterTransactionsByTime(transactions)
+            .filter { it.type == "expense" && it.category in categoryFilters }
 
         val categoryTotals = filteredTransactions.groupBy { it.category }
             .mapValues { entry -> entry.value.sumOf { it.amount } }
@@ -137,6 +151,7 @@ class BudgetFragment : Fragment() {
         pieData.setValueTextSize(12f)
         pieData.setValueTextColor(Color.BLACK)
 
+        // Set value formatter to show percentages
         pieData.setValueFormatter(object : ValueFormatter() {
             override fun getFormattedValue(value: Float): String {
                 return String.format("%.1f%%", value)
@@ -144,10 +159,7 @@ class BudgetFragment : Fragment() {
         })
 
         pieChart.data = pieData
-        pieChart.invalidate()
-
-        // Update total income, expenses, and total change
-        updateTotalAmounts()
+        pieChart.invalidate() // Refresh chart
     }
 
     private fun updateTotalAmounts() {
