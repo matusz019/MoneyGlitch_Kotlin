@@ -63,7 +63,7 @@ class BudgetFragment : Fragment() {
         pieChart.description.isEnabled = false
         pieChart.setEntryLabelColor(Color.BLACK)
         pieChart.setEntryLabelTextSize(12f)
-        pieChart.setDrawHoleEnabled(true)
+        pieChart.isDrawHoleEnabled = true
         pieChart.holeRadius = 58f
         pieChart.setHoleColor(Color.WHITE)
         pieChart.transparentCircleRadius = 61f
