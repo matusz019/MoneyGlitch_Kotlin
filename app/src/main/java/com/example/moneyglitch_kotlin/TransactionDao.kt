@@ -21,7 +21,11 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactionsDateDescending(): Flow<List<Transaction>>
 
+    @Query("SELECT COUNT(*) FROM transactions")
+    suspend fun getTransactionCount(): Int
 
+    @Upsert
+    suspend fun upsertTransactions(transactions: List<Transaction>)
 
 
 }

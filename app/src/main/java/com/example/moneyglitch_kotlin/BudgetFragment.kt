@@ -5,11 +5,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -18,14 +34,27 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.*
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class BudgetFragment : Fragment() {
+
+    private val categoryColors = mapOf(
+        "Food" to Color.parseColor("#F44336"),
+        "Transport" to Color.parseColor("#2196F3"),
+        "Bills" to Color.parseColor("#4CAF50"),
+        "Rent" to Color.parseColor("#9C27B0"),
+        "Shopping" to Color.parseColor("#FF9800"),
+        "Entertainment" to Color.parseColor("#FFC107"),
+        "Health" to Color.parseColor("#009688"),
+        "Other" to Color.parseColor("#9E9E9E")
+    )
 
     private var allTransactions by mutableStateOf(emptyList<Transaction>())
     private var selectedTimeRange by mutableStateOf("This Month")
@@ -113,12 +142,17 @@ class BudgetFragment : Fragment() {
                     val categoryTotals = filteredTransactions.groupBy { it.category }
                         .mapValues { entry -> entry.value.sumOf { it.amount } }
 
-                    val entries = categoryTotals.map { (category, total) ->
-                        PieEntry(total.toFloat(), category)
+
+                    val entries = mutableListOf<PieEntry>()
+                    val colors = mutableListOf<Int>()
+
+                    categoryTotals.forEach { (category, total) ->
+                        entries.add(PieEntry(total.toFloat(), category))
+                        colors.add(categoryColors[category] ?: Color.LTGRAY)
                     }
 
                     val dataSet = PieDataSet(entries, "Spending by Category").apply {
-                        colors = ColorTemplate.MATERIAL_COLORS.toList()
+                        this.colors = colors
                     }
 
                     val pieData = PieData(dataSet).apply {
