@@ -1,47 +1,83 @@
+package com.example.moneyglitch_kotlin
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.moneyglitch_kotlin.MoneyGlitchApp
-import com.example.moneyglitch_kotlin.R
-import com.example.moneyglitch_kotlin.TransactionAdapter
 import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var adapter: TransactionAdapter
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_home, container, false)
-        recyclerView = view.findViewById(R.id.recyclerViewTransactions)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        // Pass the remove callback to the adapter
-        adapter = TransactionAdapter(emptyList()) { transaction ->
-            // Remove transaction from the database in a coroutine
-            lifecycleScope.launch {
-                (requireActivity().application as MoneyGlitchApp).database.dao.deleteTransaction(transaction)
+    ): View {
+        return ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    this@HomeFragment.HomeScreen()
+                }
             }
         }
-        recyclerView.adapter = adapter
-        fetchTransactions()
-        return view
     }
 
-    private fun fetchTransactions() {
+    @Composable
+    fun HomeScreen() {
         val db = (requireActivity().application as MoneyGlitchApp).database
+        val transactionsFlow = remember { db.dao.getAllTransactionsDateDescending() }
+        val transactions by transactionsFlow.collectAsState(initial = emptyList())
 
-        lifecycleScope.launch {
-            db.dao.getAllTransactionsDateDescending().collect { transactions ->
-                adapter.updateData(transactions)
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            items(transactions) { transaction ->
+                TransactionItem(transaction) {
+                    lifecycleScope.launch {
+                        db.dao.deleteTransaction(transaction)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+
+    @Composable
+    fun TransactionItem(transaction: Transaction, onRemove: () -> Unit) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Category: ${transaction.category}")
+                Text(text = "Amount: £${transaction.amount}")
+                Text(text = "Date: ${transaction.date}")
+                if (transaction.description.isNotBlank()) {
+                    Text(text = "Description: ${transaction.description}")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = onRemove) {
+                    Text("Remove")
+                }
             }
         }
     }
