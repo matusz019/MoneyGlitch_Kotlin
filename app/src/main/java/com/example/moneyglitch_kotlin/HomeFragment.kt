@@ -87,7 +87,7 @@ class HomeFragment : Fragment() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ){
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(0.dp)) {
                     Text(
                         text = "Category: ${transaction.category}"
                     )
