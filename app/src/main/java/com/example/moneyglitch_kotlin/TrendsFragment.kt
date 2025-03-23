@@ -5,119 +5,148 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.ValueFormatter
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
 class TrendsFragment : Fragment() {
 
-    private lateinit var lineChart: LineChart
-    private lateinit var spinnerTimeRange: Spinner
-    private var transactions = listOf<Transaction>()
-    private var selectedTimeRange = "This Month"
+    private var allTransactions by mutableStateOf(emptyList<Transaction>())
+    private var selectedTimeRange by mutableStateOf("This Month")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_trends, container, false)
-
-        lineChart = view.findViewById(R.id.lineChart)
-        spinnerTimeRange = view.findViewById(R.id.spinnerTimeRange)
-
-        setupLineChart()
-        setupTimeRangeSpinner()
-        loadTransactionData()
-
-        return view
-    }
-
-    private fun setupLineChart() {
-        lineChart.description.isEnabled = false
-        lineChart.setTouchEnabled(true)
-        lineChart.setPinchZoom(true)
-        lineChart.xAxis.position = XAxis.XAxisPosition.BOTTOM
-        lineChart.xAxis.setDrawGridLines(false)
-        lineChart.axisLeft.setDrawGridLines(false)
-        lineChart.axisRight.isEnabled = false
-        lineChart.xAxis.granularity = 1f  // Ensure each tick represents one transaction date
-    }
-
-    private fun setupTimeRangeSpinner() {
-        val timeRangeOptions = resources.getStringArray(R.array.time_range_options)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, timeRangeOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerTimeRange.adapter = adapter
-
-        spinnerTimeRange.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedTimeRange = timeRangeOptions[position]
-                updateLineChart()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-    }
-
-    private fun loadTransactionData() {
+    ): View {
         val db = (requireActivity().application as MoneyGlitchApp).database
 
         lifecycleScope.launch {
-            db.dao.getAllTransactionsDateDescending().collect { fetchedTransactions ->
-                transactions = fetchedTransactions
-                updateLineChart()
+            db.dao.getAllTransactionsDateDescending().collect { transactions ->
+                allTransactions = transactions
+            }
+        }
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    TrendsScreen()
+                }
             }
         }
     }
 
-    private fun updateLineChart() {
-        if (transactions.isEmpty()) return
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun TrendsScreen() {
+        val context = LocalContext.current
 
-        val filteredTransactions = filterTransactionsByTime(transactions)
+        val filtered = remember(allTransactions, selectedTimeRange) {
+            filterTransactionsByTime(allTransactions)
+        }
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-
-        // Group transactions by date and sum amounts
-        val groupedTransactions = filteredTransactions.groupBy { it.date }
-            .mapValues { it.value.sumOf { transaction -> transaction.amount } }
+        // Group by date and sum
+        val grouped = filtered.groupBy { it.date }
+            .mapValues { it.value.sumOf { txn -> txn.amount } }
             .toSortedMap()
 
-        // Create a list of only the transaction dates
-        val transactionDates = groupedTransactions.keys.toList()
-
-        val entries = groupedTransactions.entries.toList().mapIndexed { index, entry ->
+        val dates = grouped.keys.toList()
+        val entries = grouped.entries.mapIndexed { index, entry ->
             Entry(index.toFloat(), entry.value.toFloat())
         }
 
-        val dataSet = LineDataSet(entries, "Transaction Trends")
-        dataSet.color = Color.BLUE
-        dataSet.valueTextColor = Color.BLACK
-        dataSet.circleRadius = 4f
-        dataSet.setDrawValues(true)
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
 
-        val lineData = LineData(dataSet)
-        lineChart.data = lineData
+            // Time Range Dropdown
+            val timeOptions = listOf("This Month", "Last Month", "Last 6 Months", "Last Year")
+            var expanded by remember { mutableStateOf(false) }
 
-        // Custom formatter to display only transaction dates on the X-axis
-        lineChart.xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                val index = value.toInt()
-                return if (index in transactionDates.indices) transactionDates[index] else ""
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedTimeRange,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Time Range") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    timeOptions.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it) },
+                            onClick = {
+                                selectedTimeRange = it
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
-        }
 
-        lineChart.xAxis.labelCount = transactionDates.size
-        lineChart.invalidate() // Refresh chart
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Line Chart
+            AndroidView(
+                factory = { LineChart(context) },
+                update = { chart ->
+                    val dataSet = LineDataSet(entries, "Transaction Trends").apply {
+                        color = Color.BLUE
+                        valueTextColor = Color.BLACK
+                        circleRadius = 4f
+                        setDrawValues(true)
+                    }
+
+                    val lineData = LineData(dataSet)
+
+                    chart.data = lineData
+                    chart.description.isEnabled = false
+                    chart.setTouchEnabled(true)
+                    chart.setPinchZoom(true)
+                    chart.axisRight.isEnabled = false
+                    chart.axisLeft.setDrawGridLines(false)
+                    chart.xAxis.setDrawGridLines(false)
+                    chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+                    chart.xAxis.granularity = 1f
+
+                    // Show actual dates on x-axis
+                    chart.xAxis.valueFormatter = object : ValueFormatter() {
+                        override fun getFormattedValue(value: Float): String {
+                            val index = value.toInt()
+                            return dates.getOrNull(index) ?: ""
+                        }
+                    }
+
+                    chart.invalidate()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp)
+            )
+        }
     }
 
     private fun filterTransactionsByTime(transactions: List<Transaction>): List<Transaction> {
