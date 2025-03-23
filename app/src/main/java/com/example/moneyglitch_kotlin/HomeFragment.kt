@@ -63,21 +63,38 @@ class HomeFragment : Fragment() {
 
     @Composable
     fun TransactionItem(transaction: Transaction, onRemove: () -> Unit) {
+
+        val backgroundColour = if (transaction.type == "income"){
+            androidx.compose.ui.graphics.Color(0xFF92FC94)
+        }else{
+            androidx.compose.ui.graphics.Color(0xFFFF99A1)
+        }
         Card(
             modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = backgroundColour),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Category: ${transaction.category}")
-                Text(text = "Amount: £${transaction.amount}")
-                Text(text = "Date: ${transaction.date}")
+                Text(
+                    text = "Category: ${transaction.category}"
+                )
+                Text(
+                    text = "Amount: £${transaction.amount}"
+                )
+                Text(
+                    text = "Date: ${transaction.date}"
+                )
                 if (transaction.description.isNotBlank()) {
-                    Text(text = "Description: ${transaction.description}")
+                    Text(
+                        text = "Description: ${transaction.description}"
+                    )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onRemove) {
-                    Text("Remove")
-                }
+            }
+            Button(
+                onClick = onRemove,
+                modifier = Modifier.align(androidx.compose.ui.Alignment.End)
+            ) {
+                Text("Remove")
             }
         }
     }

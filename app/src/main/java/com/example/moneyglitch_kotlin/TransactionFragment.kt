@@ -54,7 +54,7 @@ class TransactionFragment : Fragment() {
         val context = LocalContext.current
         val categoryArrayRes = if (transactionType == "income") R.array.income_categories else R.array.expense_categories
         val categories = context.resources.getStringArray(categoryArrayRes)
-        
+
 
         Column(modifier = Modifier
             .fillMaxSize()
@@ -193,4 +193,6 @@ class TransactionFragment : Fragment() {
         )
         datePicker.show()
     }
+
 }
+
