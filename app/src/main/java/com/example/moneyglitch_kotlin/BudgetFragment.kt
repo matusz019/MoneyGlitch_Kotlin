@@ -5,179 +5,183 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.CheckBox
-import android.widget.LinearLayout
-import android.widget.Spinner
-import android.widget.TextView
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.PieData
-import com.github.mikephil.charting.data.PieDataSet
-import com.github.mikephil.charting.data.PieEntry
+import com.github.mikephil.charting.data.*
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 class BudgetFragment : Fragment() {
 
-    private lateinit var pieChart: PieChart
-    private lateinit var categoryContainer: LinearLayout
-    private lateinit var spinnerTimeRange: Spinner
-    private lateinit var txtTotalIncome: TextView
-    private lateinit var txtTotalExpense: TextView
-    private lateinit var txtTotalChange: TextView
+    private var allTransactions by mutableStateOf(emptyList<Transaction>())
+    private var selectedTimeRange by mutableStateOf("This Month")
+    private var categoryFilters by mutableStateOf(setOf<String>())
 
-    private var categoryFilters = mutableSetOf<String>()
-    private var allCategories = mutableSetOf<String>()
-    private var transactions = listOf<Transaction>()
-    private var selectedTimeRange = "This Month"
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_budget, container, false)
-
-        pieChart = view.findViewById(R.id.pieChart)
-        categoryContainer = view.findViewById(R.id.categoryContainer)
-        spinnerTimeRange = view.findViewById(R.id.spinnerTimeRange)
-        txtTotalIncome = view.findViewById(R.id.txtTotalIncome)
-        txtTotalExpense = view.findViewById(R.id.txtTotalExpense)
-        txtTotalChange = view.findViewById(R.id.txtTotalChange)
-
-        setupPieChart()
-        setupTimeRangeSpinner()
-        loadTransactionData()
-
-        return view
-    }
-
-    private fun setupPieChart() {
-        pieChart.setUsePercentValues(true)
-        pieChart.description.isEnabled = false
-        pieChart.setEntryLabelColor(Color.BLACK)
-        pieChart.setEntryLabelTextSize(12f)
-        pieChart.isDrawHoleEnabled = true
-        pieChart.holeRadius = 58f
-        pieChart.setHoleColor(Color.WHITE)
-        pieChart.transparentCircleRadius = 61f
-    }
-
-    private fun setupTimeRangeSpinner() {
-        val timeRangeOptions = resources.getStringArray(R.array.time_range_options)
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, timeRangeOptions)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerTimeRange.adapter = adapter
-
-        spinnerTimeRange.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                selectedTimeRange = timeRangeOptions[position]
-                updatePieChart()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
-    }
-
-    private fun loadTransactionData() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val db = (requireActivity().application as MoneyGlitchApp).database
 
         lifecycleScope.launch {
-            db.dao.getAllTransactionsDateDescending().collect { fetchedTransactions ->
-                transactions = fetchedTransactions
-                allCategories = transactions.map { it.category }.toMutableSet()
-                categoryFilters.addAll(allCategories)
-
-                setupCategoryFilters()
-                updatePieChart()
+            db.dao.getAllTransactionsDateDescending().collect { transactions ->
+                allTransactions = transactions
+                val expenseCategories = transactions.filter { it.type == "expense" }.map { it.category }.toSet()
+                categoryFilters = expenseCategories
             }
         }
-    }
 
-    private fun setupCategoryFilters() {
-        categoryContainer.removeAllViews() // Clear previous checkboxes
-
-        // Get only the expense categories
-        val expenseCategories = transactions
-            .filter { it.type == "expense" }
-            .map { it.category }
-            .toSet() // Convert to a set to remove duplicates
-
-        allCategories = expenseCategories.toMutableSet() // Update allCategories to only include expenses
-        categoryFilters.clear()
-        categoryFilters.addAll(expenseCategories) // Ensure checkboxes only include expenses
-
-        // Create checkboxes for expense categories only
-        allCategories.forEach { category ->
-            val checkBox = CheckBox(requireContext()).apply {
-                text = category
-                isChecked = true
-                setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        categoryFilters.add(category)
-                    } else {
-                        categoryFilters.remove(category)
-                    }
-                    updatePieChart()
+        return ComposeView(requireContext()).apply {
+            setContent {
+                MaterialTheme {
+                    BudgetScreen()
                 }
             }
-            categoryContainer.addView(checkBox)
         }
     }
 
-
-    private fun updatePieChart() {
-        // Filter transactions to include only expenses
-        val filteredTransactions = filterTransactionsByTime(transactions)
-            .filter { it.type == "expense" && it.category in categoryFilters }
-
-        val categoryTotals = filteredTransactions.groupBy { it.category }
-            .mapValues { entry -> entry.value.sumOf { it.amount } }
-
-        val entries = categoryTotals.map { (category, total) ->
-            PieEntry(total.toFloat(), category)
-        }
-
-        val dataSet = PieDataSet(entries, "Spending by Category")
-        dataSet.colors = ColorTemplate.MATERIAL_COLORS.toList()
-
-        val pieData = PieData(dataSet)
-        pieData.setValueTextSize(12f)
-        pieData.setValueTextColor(Color.BLACK)
-
-        // Set value formatter to show percentages
-        pieData.setValueFormatter(object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                return String.format("%.1f%%", value)
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun BudgetScreen() {
+        val context = LocalContext.current
+        val filteredTransactions = remember(allTransactions, selectedTimeRange, categoryFilters) {
+            filterTransactionsByTime(allTransactions).filter {
+                it.type == "expense" && it.category in categoryFilters
             }
-        })
+        }
 
-        pieChart.data = pieData
-        pieChart.invalidate() // Refresh chart
-    }
-
-    private fun updateTotalAmounts() {
-        val filteredTransactions = filterTransactionsByTime(transactions)
-
-        val totalIncome = filteredTransactions.filter { it.type == "income" }.sumOf { it.amount }
-        val totalExpense = filteredTransactions.filter { it.type == "expense" }.sumOf { it.amount }
+        val totalIncome = filterTransactionsByTime(allTransactions).filter { it.type == "income" }.sumOf { it.amount }
+        val totalExpense = filteredTransactions.sumOf { it.amount }
         val totalChange = totalIncome - totalExpense
 
-        txtTotalIncome.text = "Total Income: £%.2f".format(totalIncome)
-        txtTotalExpense.text = "Total Spent: £%.2f".format(totalExpense)
-        txtTotalChange.text = "Total Change: £%.2f".format(totalChange)
+        val availableCategories = allTransactions.filter { it.type == "expense" }.map { it.category }.toSet()
 
-        // Set color based on positive/negative value
-        txtTotalChange.setTextColor(
-            if (totalChange >= 0) Color.parseColor("#388E3C") // Green for positive
-            else Color.parseColor("#D32F2F") // Red for negative
-        )
+        Column(modifier = Modifier.padding(16.dp)) {
+
+            // Time Range Dropdown
+            var expanded by remember { mutableStateOf(false) }
+            val timeOptions = listOf("This Month", "Last Month", "Last 6 Months", "Last Year")
+
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedTimeRange,
+                    onValueChange = {},
+                    label = { Text("Time Range") },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    timeOptions.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it) },
+                            onClick = {
+                                selectedTimeRange = it
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Pie Chart
+            AndroidView(
+                factory = { PieChart(context) },
+                update = { chart ->
+                    val categoryTotals = filteredTransactions.groupBy { it.category }
+                        .mapValues { entry -> entry.value.sumOf { it.amount } }
+
+                    val entries = categoryTotals.map { (category, total) ->
+                        PieEntry(total.toFloat(), category)
+                    }
+
+                    val dataSet = PieDataSet(entries, "Spending by Category").apply {
+                        colors = ColorTemplate.MATERIAL_COLORS.toList()
+                    }
+
+                    val pieData = PieData(dataSet).apply {
+                        setValueTextSize(12f)
+                        setValueTextColor(Color.BLACK)
+                        setValueFormatter(object : ValueFormatter() {
+                            override fun getFormattedValue(value: Float): String {
+                                return "%.1f%%".format(value)
+                            }
+                        })
+                    }
+
+                    chart.data = pieData
+                    chart.setUsePercentValues(true)
+                    chart.description.isEnabled = false
+                    chart.setEntryLabelColor(Color.BLACK)
+                    chart.setEntryLabelTextSize(12f)
+                    chart.invalidate()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Totals
+            Text("Total Income: £%.2f".format(totalIncome), color = androidx.compose.ui.graphics.Color(0xFF388E3C))
+            Text("Total Spent: £%.2f".format(totalExpense), color = androidx.compose.ui.graphics.Color(0xFFD32F2F))
+            Text(
+                "Total Change: £%.2f".format(totalChange),
+                color = if (totalChange >= 0) androidx.compose.ui.graphics.Color(0xFF388E3C)
+                else androidx.compose.ui.graphics.Color(0xFFD32F2F)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Filters
+            Text("Filter by Category:", style = MaterialTheme.typography.titleMedium)
+            LazyColumn {
+                items(availableCategories.toList()) { category ->
+                    val isChecked = category in categoryFilters
+                    Row(
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Checkbox(
+                            checked = isChecked,
+                            onCheckedChange = {
+                                categoryFilters = if (it) {
+                                    categoryFilters + category
+                                } else {
+                                    categoryFilters - category
+                                }
+                            }
+                        )
+                        Text(text = category)
+                    }
+                }
+            }
+        }
     }
 
     private fun filterTransactionsByTime(transactions: List<Transaction>): List<Transaction> {
