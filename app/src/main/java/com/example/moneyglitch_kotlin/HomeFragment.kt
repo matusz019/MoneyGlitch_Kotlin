@@ -4,15 +4,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -21,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -74,27 +80,36 @@ class HomeFragment : Fragment() {
             colors = CardDefaults.cardColors(containerColor = backgroundColour),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = "Category: ${transaction.category}"
-                )
-                Text(
-                    text = "Amount: £${transaction.amount}"
-                )
-                Text(
-                    text = "Date: ${transaction.date}"
-                )
-                if (transaction.description.isNotBlank()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Description: ${transaction.description}"
+                        text = "Category: ${transaction.category}"
                     )
+                    Text(
+                        text = "Amount: £${transaction.amount}"
+                    )
+                    Text(
+                        text = "Date: ${transaction.date}"
+                    )
+                    if (transaction.description.isNotBlank()) {
+                        Text(
+                            text = "Description: ${transaction.description}"
+                        )
+                    }
                 }
-            }
-            Button(
-                onClick = onRemove,
-                modifier = Modifier.align(androidx.compose.ui.Alignment.End)
-            ) {
-                Text("Remove")
+                Image(
+                    painter = painterResource(id = R.drawable.ic_delete),
+                    contentDescription = "Delete",
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable(onClick = onRemove)
+                )
             }
         }
     }
