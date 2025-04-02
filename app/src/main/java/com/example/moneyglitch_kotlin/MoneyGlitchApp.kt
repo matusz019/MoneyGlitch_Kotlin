@@ -7,6 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sampleTransactions
 
+
+/**
+ * Custom [Application] class for initializing global application state.
+ *
+ * This class creates a singleton instance of the [TransactionDatabase],
+ * which is shared across the app for database operations.
+ */
 class MoneyGlitchApp : Application() {
     lateinit var database: TransactionDatabase
 

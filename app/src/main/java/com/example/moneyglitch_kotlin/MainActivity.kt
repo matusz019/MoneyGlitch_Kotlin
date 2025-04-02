@@ -11,11 +11,21 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
+
+
+/**
+ * The main entry point of the MoneyGlitch app.
+ * Handles navigation between fragments and the visibility of floating action buttons.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigationView: BottomNavigationView
 
-
+    /**
+     * Called when the activity is starting.
+     *
+     * @param savedInstanceState If the activity is being re-initialized after previously being shut down, this contains the most recent data.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -52,10 +62,13 @@ class MainActivity : AppCompatActivity() {
         replaceFragment(HomeFragment())
         bottomNavigationView.selectedItemId = R.id.bottom_home
 
+
+        // Floating action button and menu setup
         val fab: FloatingActionButton = findViewById(R.id.fab)
         val fabMenu: LinearLayout = findViewById(R.id.fab_menu_container)
         var isFabMenuOpen = false
 
+        // Toggle FAB menu visibility
         fab.setOnClickListener {
             isFabMenuOpen = if (isFabMenuOpen) {
                 fabMenu.visibility = View.GONE
@@ -83,12 +96,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Replaces the current fragment inside the main container.
+     *
+     * @param fragment The [Fragment] to display.
+     */
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.frame_container, fragment)
             .commit()
     }
 
+    /**
+     * Clears the bottom navigation selection.
+     * This is used when navigating to a screen that isn't part of the bottom navigation bar.
+     */
     private fun clearBottomNavSelection() {
         bottomNavigationView.menu.setGroupCheckable(0, true, false) // Temporarily disable checkable state
         for (i in 0 until bottomNavigationView.menu.size()) {
@@ -97,6 +119,11 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.menu.setGroupCheckable(0, true, true) // Re-enable checkable state
     }
 
+    /**
+     * Opens the [TransactionFragment] with the specified transaction type.
+     *
+     * @param type The type of transaction to add ("income" or "expense").
+     */
     private fun openTransactionFragment(type: String) {
         val fragment = TransactionFragment()
         val bundle = Bundle()
