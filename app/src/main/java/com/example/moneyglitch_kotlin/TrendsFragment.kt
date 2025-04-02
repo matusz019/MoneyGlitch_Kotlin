@@ -23,11 +23,24 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Fragment displaying trends in transaction data using a line chart.
+ * It allows users to filter transaction data by different time ranges and view a graphical summary.
+ */
+
 class TrendsFragment : Fragment() {
 
     private var allTransactions by mutableStateOf(emptyList<Transaction>())
     private var selectedTimeRange by mutableStateOf("This Month")
 
+    /**
+     * Initializes the fragment view using Jetpack Compose, fetching transaction data from the database.
+     *
+     * @param inflater The LayoutInflater object.
+     * @param container Optional parent view.
+     * @param savedInstanceState Previously saved state, if any.
+     * @return The composed view of this fragment.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -49,6 +62,11 @@ class TrendsFragment : Fragment() {
         }
     }
 
+
+    /**
+     * Displays a screen with a time range dropdown and a line chart of transaction amounts over time.
+     * It uses Compose to layout the UI and MPAndroidChart to display the graph.
+     */
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TrendsScreen() {
@@ -149,6 +167,13 @@ class TrendsFragment : Fragment() {
         }
     }
 
+
+    /**
+     * Filters a list of transactions based on the selected time range.
+     *
+     * @param transactions The list of transactions to filter.
+     * @return The filtered list of transactions.
+     */
     private fun filterTransactionsByTime(transactions: List<Transaction>): List<Transaction> {
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
