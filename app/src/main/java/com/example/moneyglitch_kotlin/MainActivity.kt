@@ -94,6 +94,13 @@ class MainActivity : AppCompatActivity() {
             isFabMenuOpen = false
             clearBottomNavSelection()
         }
+//        val fabRecurring: View = findViewById(R.id.btn_option_recurring)Income:
+//        fabIncome.setOnClickListener {
+//            openTransactionFragment("income")
+//            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+//            isFabMenuOpen = false
+//            clearBottomNavSelection()
+//        }
     }
 
     /**
