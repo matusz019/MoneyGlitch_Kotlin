@@ -42,7 +42,8 @@ class TrendsFragment : Fragment() {
      * @return The composed view of this fragment.
      */
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val db = (requireActivity().application as MoneyGlitchApp).database

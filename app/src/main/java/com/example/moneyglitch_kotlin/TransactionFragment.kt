@@ -21,13 +21,24 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-
+/**
+ * Fragment that provides a form for user to input new transactions.
+ */
 class TransactionFragment : Fragment() {
 
     private var transactionType: String = "income"
 
+    /**
+     * Initializes the compose view for the transaction form
+     *
+     * @param inflater The LayoutInflater object.
+     * @param container Optional parent container.
+     * @param savedInstanceState Previously saved state, if any.
+     * @return The composed view of the transaction form.
+     */
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         transactionType = arguments?.getString("type", "income") ?: "income"
@@ -41,6 +52,11 @@ class TransactionFragment : Fragment() {
         }
     }
 
+    /**
+     * Composable function that renders the transaction form.
+     * Users can enter amount, date, category, and description.
+     * Submitting the form inserts a transaction into the database.
+     */
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun TransactionForm() {
@@ -178,6 +194,11 @@ class TransactionFragment : Fragment() {
         }
     }
 
+    /**
+     * Displays a date picker dialog and returns the selected date in yyyy-MM-dd format.
+     *
+     * @param onDateSelected Callback function to return the selected date.
+     */
     private fun showDatePicker(onDateSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
         val datePicker = DatePickerDialog(
