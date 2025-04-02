@@ -43,8 +43,16 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
+/**
+ * Fragment that provides a budgeting overview with a pie chart visualization.
+ * Displays filtered transaction summaries and allows category-based filtering.
+ */
 class BudgetFragment : Fragment() {
 
+    /**
+     * Defines color coding for each category in the pie chart.
+     */
     private val categoryColors = mapOf(
         "Food" to Color.parseColor("#F44336"),
         "Transport" to Color.parseColor("#2196F3"),
@@ -60,6 +68,9 @@ class BudgetFragment : Fragment() {
     private var selectedTimeRange by mutableStateOf("This Month")
     private var categoryFilters by mutableStateOf(setOf<String>())
 
+    /**
+     * Initializes the fragment view with Compose content and begins loading transaction data.
+     */
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val db = (requireActivity().application as MoneyGlitchApp).database
 
@@ -80,6 +91,13 @@ class BudgetFragment : Fragment() {
         }
     }
 
+    /**
+     * Displays a budget summary screen including:
+     * - A time filter dropdown
+     * - A pie chart of expenses by category
+     * - Totals for income, spending, and net change
+     * - Category-based filters
+     */
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun BudgetScreen() {
@@ -218,6 +236,12 @@ class BudgetFragment : Fragment() {
         }
     }
 
+    /**
+     * Filters a list of transactions based on the currently selected time range.
+     *
+     * @param transactions The list of all transactions to filter.
+     * @return A list of transactions within the selected time frame.
+     */
     private fun filterTransactionsByTime(transactions: List<Transaction>): List<Transaction> {
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
