@@ -45,6 +45,8 @@
                 android:elevation="16dp"
                 />
 
+
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_option_expense"
                 android:layout_width="50dp"
@@ -59,8 +61,30 @@
                 android:insetBottom="0dp"
                 android:padding="0dp"
                 android:clickable="true"
+                android:layout_marginBottom="18dp"
                 android:elevation="16dp"
                 />
+
+            <ImageButton
+                android:id="@+id/btn_option_recurring_expense"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_square_button"
+                android:src="@drawable/recurring_expense_icon"
+                android:scaleType="centerInside"
+                android:elevation="16dp"
+                android:layout_marginBottom="18dp"
+                app:tint="@color/grey" />
+
+            <ImageButton
+                android:id="@+id/btn_option_recurring_income"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_square_button"
+                android:src="@drawable/recurring_income_icon"
+                android:scaleType="centerInside"
+                android:elevation="16dp"
+                app:tint="@color/grey" />
 
 
         </LinearLayout>
