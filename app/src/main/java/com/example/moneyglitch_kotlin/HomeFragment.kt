@@ -34,8 +34,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
+
+/**
+ * Fragment that displays a list of recent transactions
+ * Users can view transaction details and delete individual entries.
+ */
 class HomeFragment : Fragment() {
 
+    /**
+     * Inflates the Compose UI content inside the fragment.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate views.
+     * @param container If non-null, this is the parent view that the fragment's UI should attach to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
+     * @return The ComposeView to render.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -49,6 +62,10 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /**
+     * Composable function that renders the full list of transactions in a scrollable column.
+     * It observes transaction data from the database and updates the UI reactively.
+     */
     @Composable
     fun HomeScreen() {
         val db = (requireActivity().application as MoneyGlitchApp).database
@@ -67,6 +84,14 @@ class HomeFragment : Fragment() {
         }
     }
 
+    /**
+     * Composable that renders a single transaction entry inside a [Card].
+     * The card color varies based on the transaction type (income or expense),
+     * and includes a delete icon that removes the transaction when tapped.
+     *
+     * @param transaction The transaction to display.
+     * @param onRemove Callback to execute when the delete icon is pressed.
+     */
     @Composable
     fun TransactionItem(transaction: Transaction, onRemove: () -> Unit) {
 
