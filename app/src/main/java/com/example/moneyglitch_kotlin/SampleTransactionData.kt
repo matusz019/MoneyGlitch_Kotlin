@@ -1,5 +1,12 @@
 import com.example.moneyglitch_kotlin.Transaction
 
+/**
+ * A list of sample transactions used for testing, previews, or initial population of the UI.
+ * Each transaction represents either an income or an expense with associated metadata.
+ *
+ * @see Transaction
+ */
+
 val sampleTransactions = listOf(
     Transaction(id=1, amount=1367.48, date="2024-04-01", description="Weekend shift", category="Salary", type="income"),
     Transaction(id=2, amount=29.85, date="2024-04-01", description="Phone bill", category="Transport", type="expense"),
