@@ -51,6 +51,21 @@ class ShowRecurringFragment : Fragment() {
             }
         }
 
+        if (transactions.isEmpty()) {
+            Text(
+                text = "No recurring transactions found.",
+                modifier = Modifier.padding(16.dp),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                softWrap = true,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+
+            )
+
+        }
+
         if (transactionToCancel != null) {
             AlertDialog(
                 onDismissRequest = { transactionToCancel = null },
