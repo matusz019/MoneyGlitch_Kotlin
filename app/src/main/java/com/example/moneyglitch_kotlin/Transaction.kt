@@ -22,5 +22,8 @@ data class Transaction(
     val date: String,
     val description: String,
     val category: String,
-    val type: String  // "income" or "expense"
+    val type: String,  // "income" or "expense"
+    val recurring: Boolean = false,
+    val recurringInterval: String? = null,
+    val nextDueDate: String? = null
 )
