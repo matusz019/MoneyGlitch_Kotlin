@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -119,7 +120,6 @@ class RecurringTransactionFragment : Fragment() {
                         showDatePicker { picked -> date = picked }
                     },
                 readOnly = true,
-                enabled = false,
                 singleLine = true
             )
 
@@ -166,6 +166,10 @@ class RecurringTransactionFragment : Fragment() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.green),
+                        contentColor = colorResource(id = R.color.grey)
+                    ),
                 onClick = {
                     if (amount.isBlank() || date.isBlank() || selectedCategory.isBlank() || repeatInterval.isBlank()) {
                         Toast.makeText(requireContext(), "Amount, Category, Date and Interval are required", Toast.LENGTH_SHORT).show()

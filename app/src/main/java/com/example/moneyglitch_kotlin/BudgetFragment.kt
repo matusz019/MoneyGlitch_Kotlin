@@ -1,6 +1,7 @@
 package com.example.moneyglitch_kotlin
 
-import android.graphics.Color
+import android.graphics.Color as AndroidColor
+import androidx.compose.ui.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
@@ -54,14 +56,14 @@ class BudgetFragment : Fragment() {
      * Defines color coding for each category in the pie chart.
      */
     private val categoryColors = mapOf(
-        "Food" to Color.parseColor("#F44336"),
-        "Transport" to Color.parseColor("#2196F3"),
-        "Bills" to Color.parseColor("#4CAF50"),
-        "Rent" to Color.parseColor("#9C27B0"),
-        "Shopping" to Color.parseColor("#FF9800"),
-        "Entertainment" to Color.parseColor("#FFC107"),
-        "Health" to Color.parseColor("#009688"),
-        "Other" to Color.parseColor("#9E9E9E")
+        "Food" to AndroidColor.parseColor("#F44336"),
+        "Transport" to AndroidColor.parseColor("#2196F3"),
+        "Bills" to AndroidColor.parseColor("#4CAF50"),
+        "Rent" to AndroidColor.parseColor("#9C27B0"),
+        "Shopping" to AndroidColor.parseColor("#FF9800"),
+        "Entertainment" to AndroidColor.parseColor("#FFC107"),
+        "Health" to AndroidColor.parseColor("#009688"),
+        "Other" to AndroidColor.parseColor("#9E9E9E")
     )
 
     private var allTransactions by mutableStateOf(emptyList<Transaction>())
@@ -127,7 +129,10 @@ class BudgetFragment : Fragment() {
                 OutlinedTextField(
                     value = selectedTimeRange,
                     onValueChange = {},
-                    label = { Text("Time Range") },
+                    label = { Text(
+                        text = "Time Range",
+                        color = MaterialTheme.colorScheme.onSurface
+                    ) },
                     readOnly = true,
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     modifier = Modifier
@@ -166,7 +171,7 @@ class BudgetFragment : Fragment() {
 
                     categoryTotals.forEach { (category, total) ->
                         entries.add(PieEntry(total.toFloat(), category))
-                        colors.add(categoryColors[category] ?: Color.LTGRAY)
+                        colors.add(categoryColors[category] ?: AndroidColor.LTGRAY)
                     }
 
                     val dataSet = PieDataSet(entries, "Spending by Category").apply {
@@ -175,7 +180,7 @@ class BudgetFragment : Fragment() {
 
                     val pieData = PieData(dataSet).apply {
                         setValueTextSize(12f)
-                        setValueTextColor(Color.BLACK)
+                        setValueTextColor(AndroidColor.BLACK)
                         setValueFormatter(object : ValueFormatter() {
                             override fun getFormattedValue(value: Float): String {
                                 return "%.1f%%".format(value)
@@ -186,7 +191,7 @@ class BudgetFragment : Fragment() {
                     chart.data = pieData
                     chart.setUsePercentValues(true)
                     chart.description.isEnabled = false
-                    chart.setEntryLabelColor(Color.BLACK)
+                    chart.setEntryLabelColor(AndroidColor.BLACK)
                     chart.setEntryLabelTextSize(12f)
                     chart.invalidate()
                 },
@@ -198,18 +203,31 @@ class BudgetFragment : Fragment() {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Totals
-            Text("Total Income: £%.2f".format(totalIncome), color = androidx.compose.ui.graphics.Color(0xFF388E3C))
-            Text("Total Spent: £%.2f".format(totalExpense), color = androidx.compose.ui.graphics.Color(0xFFD32F2F))
+            Text(
+                "Total Income: £%.2f".format(totalIncome),
+                color = Color(0xFF66BB6A), // Green
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                "Total Spent: £%.2f".format(totalExpense),
+                color = Color(0xFFEF5350), // Red
+                fontWeight = FontWeight.SemiBold
+            )
             Text(
                 "Total Change: £%.2f".format(totalChange),
-                color = if (totalChange >= 0) androidx.compose.ui.graphics.Color(0xFF388E3C)
-                else androidx.compose.ui.graphics.Color(0xFFD32F2F)
+                color = if (totalChange >= 0) Color(0xFF66BB6A) else Color(0xFFEF5350),
+                fontWeight = FontWeight.Bold
             )
+
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Filters
-            Text("Filter by Category:", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Filter by Category:",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             LazyColumn {
                 items(availableCategories.toList()) { category ->
                     val isChecked = category in categoryFilters
@@ -229,7 +247,10 @@ class BudgetFragment : Fragment() {
                                 }
                             }
                         )
-                        Text(text = category)
+                        Text(
+                            text = category,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
             }

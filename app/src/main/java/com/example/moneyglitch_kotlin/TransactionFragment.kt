@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -139,7 +140,6 @@ class TransactionFragment : Fragment() {
                         }
                     },
                 readOnly = true,
-                enabled = false,
                 singleLine = true
             )
 
@@ -157,6 +157,10 @@ class TransactionFragment : Fragment() {
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colorResource(id = R.color.green),
+                    contentColor = colorResource(id = R.color.grey)
+                ),
                 onClick = {
                     if (amount.isBlank() || date.isBlank() || selectedCategory.isBlank()) {
                         Toast.makeText(requireContext(), "Amount, Category and Date are required", Toast.LENGTH_SHORT).show()
