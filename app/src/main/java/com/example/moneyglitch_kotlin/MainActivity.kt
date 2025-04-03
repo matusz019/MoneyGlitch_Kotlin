@@ -79,13 +79,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-//        val fabShowRecurring: View = findViewById(R.id.btn_show_recurring)
-//        fabIncome.setOnClickListener {
-//            openTransactionFragment("income")
-//            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
-//            isFabMenuOpen = false
-//            clearBottomNavSelection()
-//        }
+        val fabShowRecurring: View = findViewById(R.id.btn_show_recurring)
+        fabShowRecurring.setOnClickListener {
+            supportFragmentManager.beginTransaction()
+                .replace(R.id.frame_container, ShowRecurringFragment())
+                .addToBackStack(null)
+                .commit()
+
+            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+            isFabMenuOpen = false
+            clearBottomNavSelection()
+        }
 
         val fabIncome: View = findViewById(R.id.btn_option_income)
         fabIncome.setOnClickListener {
@@ -151,6 +155,11 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    /**
+     * Opens the [RecurringTransactionFragment] with the specified transaction type.
+     *
+     * @param type The type of transaction to add ("income" or "expense").
+     */
     private fun openRecurringTransactionFragment(type: String) {
         val fragment = RecurringTransactionFragment()
         val bundle = Bundle()

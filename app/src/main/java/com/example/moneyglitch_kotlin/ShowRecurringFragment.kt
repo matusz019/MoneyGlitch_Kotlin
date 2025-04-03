@@ -131,8 +131,8 @@ class ShowRecurringFragment : Fragment() {
                     }
                 }
                 Image(
-                    painter = painterResource(id = R.drawable.ic_delete),
-                    contentDescription = "Delete",
+                    painter = painterResource(id = R.drawable.cancel_recurring_icon),
+                    contentDescription = "Cancel Recurring Transaction",
                     modifier = Modifier
                         .size(32.dp)
                         .clickable(onClick = onRemove)
