@@ -123,6 +123,7 @@ class ShowRecurringFragment : Fragment() {
                     if (transaction.description.isNotBlank()) {
                         Text(text = "Description: ${transaction.description}")
                     }
+                    Text("Recurring Interval: ${transaction.recurringInterval}")
                 }
                 Image(
                     painter = painterResource(id = R.drawable.cancel_recurring_icon),
