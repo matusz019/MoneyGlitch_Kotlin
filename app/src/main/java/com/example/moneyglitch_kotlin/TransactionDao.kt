@@ -54,6 +54,14 @@ interface TransactionDao {
     suspend fun getTransactionCount(): Int
 
     /**
+     * Retrieves all recurring transactions from the database.
+     *
+     * @return A [Flow] emitting a list of all recurring transactions.
+     */
+    @Query("SELECT * FROM transactions WHERE isRecurring = 1")
+    suspend fun getAllRecurringTransactions(): List<Transaction>
+
+    /**
      * Inserts a new transactions or updates a existing ones based on primary key.
      * Used for loading sample data.
      * @param transactions The list of transactions to be inserted or updated.
