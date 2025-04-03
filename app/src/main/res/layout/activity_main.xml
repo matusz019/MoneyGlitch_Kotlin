@@ -27,6 +27,17 @@
             android:visibility="gone"
             android:elevation="16dp">
 
+            <ImageButton
+                android:id="@+id/btn_show_recurring"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:background="@drawable/rounded_square_button"
+                android:src="@drawable/cancel_recurring_icon"
+                android:scaleType="centerInside"
+                android:elevation="16dp"
+                android:layout_marginBottom="18dp"
+                app:tint="@color/grey" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_option_income"
                 android:layout_width="50dp"
@@ -85,6 +96,8 @@
                 android:scaleType="centerInside"
                 android:elevation="16dp"
                 app:tint="@color/grey" />
+
+
 
 
         </LinearLayout>

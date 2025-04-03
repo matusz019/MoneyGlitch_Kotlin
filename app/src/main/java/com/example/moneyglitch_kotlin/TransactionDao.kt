@@ -59,7 +59,7 @@ interface TransactionDao {
      * @return A [Flow] emitting a list of all recurring transactions.
      */
     @Query("SELECT * FROM transactions WHERE isRecurring = 1")
-    suspend fun getAllRecurringTransactions(): List<Transaction>
+    fun getAllRecurringTransactions(): Flow<List<Transaction>>
 
     /**
      * Inserts a new transactions or updates a existing ones based on primary key.

@@ -79,6 +79,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+//        val fabShowRecurring: View = findViewById(R.id.btn_show_recurring)
+//        fabIncome.setOnClickListener {
+//            openTransactionFragment("income")
+//            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+//            isFabMenuOpen = false
+//            clearBottomNavSelection()
+//        }
+
         val fabIncome: View = findViewById(R.id.btn_option_income)
         fabIncome.setOnClickListener {
             openTransactionFragment("income")

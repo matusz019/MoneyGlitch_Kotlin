@@ -44,33 +44,35 @@ class MoneyGlitchApp : Application() {
     private suspend fun processDueRecurringTransactions(dao: TransactionDao) {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-        dao.getAllRecurringTransactions().forEach { transaction ->
-            if (transaction.nextDueDate != null && transaction.nextDueDate <= today) {
-                val newTxn = transaction.copy(
-                    id = 0,
-                    date = transaction.nextDueDate,
-                    isRecurring = false,
-                    recurringInterval = null,
-                    nextDueDate = null
-                )
-                dao.upsertTransaction(newTxn)
+        dao.getAllRecurringTransactions().collect { transactions ->
+            transactions.forEach { transaction ->
+                if (transaction.nextDueDate != null && transaction.nextDueDate <= today) {
+                    val newTxn = transaction.copy(
+                        id = 0,
+                        date = transaction.nextDueDate,
+                        isRecurring = false,
+                        recurringInterval = null,
+                        nextDueDate = null
+                    )
+                    dao.upsertTransaction(newTxn)
 
-                // Calculate next due date
-                val cal = Calendar.getInstance().apply {
-                    time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(transaction.nextDueDate)!!
+                    // Calculate next due date
+                    val cal = Calendar.getInstance().apply {
+                        time = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(transaction.nextDueDate)!!
+                    }
+
+                    when (transaction.recurringInterval) {
+                        "daily" -> cal.add(Calendar.DAY_OF_MONTH, 1)
+                        "weekly" -> cal.add(Calendar.WEEK_OF_YEAR, 1)
+                        "monthly" -> cal.add(Calendar.MONTH, 1)
+                    }
+
+                    val updatedTxn = transaction.copy(
+                        nextDueDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
+                    )
+
+                    dao.upsertTransaction(updatedTxn)
                 }
-
-                when (transaction.recurringInterval) {
-                    "daily" -> cal.add(Calendar.DAY_OF_MONTH, 1)
-                    "weekly" -> cal.add(Calendar.WEEK_OF_YEAR, 1)
-                    "monthly" -> cal.add(Calendar.MONTH, 1)
-                }
-
-                val updatedTxn = transaction.copy(
-                    nextDueDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time)
-                )
-
-                dao.upsertTransaction(updatedTxn)
             }
         }
     }
