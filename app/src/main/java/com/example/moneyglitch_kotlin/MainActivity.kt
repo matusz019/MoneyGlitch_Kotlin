@@ -94,13 +94,13 @@ class MainActivity : AppCompatActivity() {
             isFabMenuOpen = false
             clearBottomNavSelection()
         }
-//        val fabRecurring: View = findViewById(R.id.btn_option_recurring)Income:
-//        fabIncome.setOnClickListener {
-//            openTransactionFragment("income")
-//            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
-//            isFabMenuOpen = false
-//            clearBottomNavSelection()
-//        }
+        val fabRecurringIncome: View = this.findViewById(R.id.btn_option_recurring_income)
+        fabRecurringIncome.setOnClickListener {
+            openRecurringTransactionFragment("income")
+            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+            isFabMenuOpen = false
+            clearBottomNavSelection()
+        }
     }
 
     /**
@@ -133,6 +133,18 @@ class MainActivity : AppCompatActivity() {
      */
     private fun openTransactionFragment(type: String) {
         val fragment = TransactionFragment()
+        val bundle = Bundle()
+        bundle.putString("type", type)  // Attach "type" to bundle
+        fragment.arguments = bundle
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frame_container, fragment)
+            .addToBackStack(null)  // Allows back navigation
+            .commit()
+    }
+
+    private fun openRecurringTransactionFragment(type: String) {
+        val fragment = RecurringTransactionFragment()
         val bundle = Bundle()
         bundle.putString("type", type)  // Attach "type" to bundle
         fragment.arguments = bundle

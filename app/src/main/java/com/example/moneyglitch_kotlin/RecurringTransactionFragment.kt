@@ -22,20 +22,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Fragment that provides a form for user to input new transactions.
+ * Fragment that provides a form for the user to input new recurring transactions.
  */
 class RecurringTransactionFragment : Fragment() {
 
     private var transactionType: String = "income"
 
-    /**
-     * Initializes the compose view for the transaction form
-     *
-     * @param inflater The LayoutInflater object.
-     * @param container Optional parent container.
-     * @param savedInstanceState Previously saved state, if any.
-     * @return The composed view of the transaction form.
-     */
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,9 +45,7 @@ class RecurringTransactionFragment : Fragment() {
     }
 
     /**
-     * Composable function that renders the transaction form.
-     * Users can enter amount, date, category, and description.
-     * Submitting the form inserts a transaction into the database.
+     * Composable function that renders the recurring transaction form.
      */
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -66,17 +56,20 @@ class RecurringTransactionFragment : Fragment() {
         var date by remember { mutableStateOf("") }
         var description by remember { mutableStateOf("") }
         var selectedCategory by remember { mutableStateOf("") }
+        var repeatInterval by remember { mutableStateOf("None") }
+        var occurrences by remember { mutableStateOf("1") }
 
         val context = LocalContext.current
-        val categoryArrayRes = if (transactionType == "income") R.array.income_categories else R.array.expense_categories
-        val categories = context.resources.getStringArray(categoryArrayRes)
+        val categories = context.resources.getStringArray(
+            if (transactionType == "income") R.array.income_categories else R.array.expense_categories
+        )
 
+        val intervalOptions = listOf("Daily", "Weekly", "Monthly")
 
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)) {
 
-            //Amount
             OutlinedTextField(
                 value = amount,
                 onValueChange = { amount = it },
@@ -88,55 +81,43 @@ class RecurringTransactionFragment : Fragment() {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Category Dropdown
-            var expanded by remember { mutableStateOf(false) }
-
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = !expanded }
-            ) {
+            var categoryExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = categoryExpanded, onExpandedChange = { categoryExpanded = !categoryExpanded }) {
                 OutlinedTextField(
                     value = selectedCategory,
                     onValueChange = {},
-                    readOnly = true,
                     label = { Text("Category") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoryExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
-
                 ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    expanded = categoryExpanded,
+                    onDismissRequest = { categoryExpanded = false }
                 ) {
                     categories.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category) },
                             onClick = {
                                 selectedCategory = category
-                                expanded = false
+                                categoryExpanded = false
                             }
                         )
                     }
                 }
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Date picker
+            // Date Picker
             OutlinedTextField(
                 value = date,
                 onValueChange = {},
-                label = { Text("Select Date") },
+                label = { Text("Start Date") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        showDatePicker { picked ->
-                            date = picked
-                        }
+                        showDatePicker { picked -> date = picked }
                     },
                 readOnly = true,
                 enabled = false,
@@ -145,11 +126,50 @@ class RecurringTransactionFragment : Fragment() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //Description
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description (Optional)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Repeat Interval
+            var intervalExpanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(expanded = intervalExpanded, onExpandedChange = { intervalExpanded = !intervalExpanded }) {
+                OutlinedTextField(
+                    value = repeatInterval,
+                    onValueChange = {},
+                    label = { Text("Repeat") },
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = intervalExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = intervalExpanded,
+                    onDismissRequest = { intervalExpanded = false }
+                ) {
+                    intervalOptions.forEach {
+                        DropdownMenuItem(
+                            text = { Text(it) },
+                            onClick = {
+                                repeatInterval = it
+                                intervalExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Number of Occurrences
+            OutlinedTextField(
+                value = occurrences,
+                onValueChange = { occurrences = it },
+                label = { Text("Occurrences") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -163,33 +183,42 @@ class RecurringTransactionFragment : Fragment() {
                         return@Button
                     }
 
-                    val transaction = Transaction(
-                        amount = amount.toDoubleOrNull() ?: 0.0,
-                        date = date,
-                        description = description,
-                        category = selectedCategory,
-                        type = transactionType
-                    )
+                    val baseDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date)
+                    val cal = Calendar.getInstance().apply { time = baseDate!! }
+
+                    val totalOccurrences = occurrences.toIntOrNull() ?: 1
 
                     lifecycleScope.launch(Dispatchers.IO) {
-                        db.dao.upsertTransaction(transaction)
+                        repeat(totalOccurrences) {
+                            val txn = Transaction(
+                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time),
+                                description = description,
+                                category = selectedCategory,
+                                type = transactionType
+                            )
+                            db.dao.upsertTransaction(txn)
+
+                            when (repeatInterval) {
+                                "Daily" -> cal.add(Calendar.DAY_OF_MONTH, 1)
+                                "Weekly" -> cal.add(Calendar.WEEK_OF_YEAR, 1)
+                                "Monthly" -> cal.add(Calendar.MONTH, 1)
+                            }
+                        }
                     }
 
-                    Toast.makeText(requireContext(), "$transactionType saved!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Recurring $transactionType saved!", Toast.LENGTH_SHORT).show()
 
-                    // Reset form
                     amount = ""
                     date = ""
                     description = ""
                     selectedCategory = ""
+                    repeatInterval = "None"
+                    occurrences = "1"
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Add ${transactionType.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase(
-                        Locale.getDefault()
-                    ) else it.toString()
-                }}")
+                Text("Add Recurring ${transactionType.replaceFirstChar { it.uppercase() }}")
             }
         }
     }
@@ -214,6 +243,5 @@ class RecurringTransactionFragment : Fragment() {
         )
         datePicker.show()
     }
-
 }
 
