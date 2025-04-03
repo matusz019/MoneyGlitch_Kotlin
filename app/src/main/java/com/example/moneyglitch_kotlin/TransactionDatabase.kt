@@ -12,7 +12,7 @@ import androidx.room.RoomDatabase
  * @constructor This class should not be instantiated directly; use [getDatabase] instead.
  */
 @Database(entities = [Transaction::class],
-    version = 1)
+    version = 2)
 abstract class TransactionDatabase : RoomDatabase() {
 
     /**
@@ -39,7 +39,7 @@ abstract class TransactionDatabase : RoomDatabase() {
                     context.applicationContext,
                     TransactionDatabase::class.java,
                     "transaction_db"
-                ).build()
+                ).fallbackToDestructiveMigration().build()
                 INSTANCE = instance
                 instance
             }

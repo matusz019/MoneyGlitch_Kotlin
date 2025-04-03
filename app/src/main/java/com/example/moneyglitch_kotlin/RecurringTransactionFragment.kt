@@ -56,8 +56,7 @@ class RecurringTransactionFragment : Fragment() {
         var date by remember { mutableStateOf("") }
         var description by remember { mutableStateOf("") }
         var selectedCategory by remember { mutableStateOf("") }
-        var repeatInterval by remember { mutableStateOf("None") }
-        var occurrences by remember { mutableStateOf("1") }
+        var repeatInterval by remember { mutableStateOf("") }
 
         val context = LocalContext.current
         val categories = context.resources.getStringArray(
@@ -163,58 +162,41 @@ class RecurringTransactionFragment : Fragment() {
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Number of Occurrences
-            OutlinedTextField(
-                value = occurrences,
-                onValueChange = { occurrences = it },
-                label = { Text("Occurrences") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    if (amount.isBlank() || date.isBlank() || selectedCategory.isBlank()) {
-                        Toast.makeText(requireContext(), "Amount, Category and Date are required", Toast.LENGTH_SHORT).show()
+                    if (amount.isBlank() || date.isBlank() || selectedCategory.isBlank() || repeatInterval.isBlank()) {
+                        Toast.makeText(requireContext(), "Amount, Category, Date and Interval are required", Toast.LENGTH_SHORT).show()
                         return@Button
                     }
 
-                    val baseDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(date)
-                    val cal = Calendar.getInstance().apply { time = baseDate!! }
 
-                    val totalOccurrences = occurrences.toIntOrNull() ?: 1
+                    val transaction = Transaction(
+                        amount = amount.toDoubleOrNull() ?: 0.0,
+                        date = date,
+                        description = description,
+                        category = selectedCategory,
+                        type = transactionType,
+                        isRecurring = true,
+                        recurringInterval = repeatInterval.lowercase(),
+                        nextDueDate = calculateNextDueDate(date, repeatInterval)
+                    )
 
                     lifecycleScope.launch(Dispatchers.IO) {
-                        repeat(totalOccurrences) {
-                            val txn = Transaction(
-                                amount = amount.toDoubleOrNull() ?: 0.0,
-                                date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.time),
-                                description = description,
-                                category = selectedCategory,
-                                type = transactionType
-                            )
-                            db.dao.upsertTransaction(txn)
-
-                            when (repeatInterval) {
-                                "Daily" -> cal.add(Calendar.DAY_OF_MONTH, 1)
-                                "Weekly" -> cal.add(Calendar.WEEK_OF_YEAR, 1)
-                                "Monthly" -> cal.add(Calendar.MONTH, 1)
-                            }
-                        }
+                        db.dao.upsertTransaction(transaction)
                     }
 
                     Toast.makeText(requireContext(), "Recurring $transactionType saved!", Toast.LENGTH_SHORT).show()
 
+                    // Reset form
                     amount = ""
                     date = ""
                     description = ""
                     selectedCategory = ""
                     repeatInterval = "None"
-                    occurrences = "1"
+
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -242,6 +224,28 @@ class RecurringTransactionFragment : Fragment() {
             calendar.get(Calendar.DAY_OF_MONTH)
         )
         datePicker.show()
+    }
+
+    /**
+     * Calculates the next due date based on the current date and the recurrence interval.
+     *
+     * @param current Current date in yyyy-MM-dd format.
+     * @param recurrence Recurrence interval (e.g., "daily", "weekly", "monthly").
+     *
+     * @return Next due date in yyyy-MM-dd format.
+     */
+    private fun calculateNextDueDate(current: String, recurrence: String): String {
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val cal = Calendar.getInstance()
+        cal.time = format.parse(current) ?: Date()
+
+        when (recurrence.lowercase()) {
+            "daily" -> cal.add(Calendar.DAY_OF_MONTH, 1)
+            "weekly" -> cal.add(Calendar.WEEK_OF_YEAR, 1)
+            "monthly" -> cal.add(Calendar.MONTH, 1)
+        }
+
+        return format.format(cal.time)
     }
 }
 
