@@ -106,6 +106,13 @@ class MainActivity : AppCompatActivity() {
             isFabMenuOpen = false
             clearBottomNavSelection()
         }
+        val fabRecurringExpense: View = this.findViewById(R.id.btn_option_recurring_expense)
+        fabRecurringExpense.setOnClickListener {
+            openRecurringTransactionFragment("expense")
+            fabMenu.visibility = View.GONE  // Auto-hide FAB menu
+            isFabMenuOpen = false
+            clearBottomNavSelection()
+        }
         val fabRecurringIncome: View = this.findViewById(R.id.btn_option_recurring_income)
         fabRecurringIncome.setOnClickListener {
             openRecurringTransactionFragment("income")
