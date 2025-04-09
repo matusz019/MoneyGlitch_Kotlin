@@ -21,8 +21,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
+/**
+ * Fragment that displays all recurring transactions in a list format.
+ * Users can cancel a recurring transaction through a confirmation dialog.
+ */
+
 class ShowRecurringFragment : Fragment() {
 
+    /**
+     * Initializes the Compose UI inside the fragment's view.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate views.
+     * @param container If non-null, this is the parent view that the fragment's UI should attach to.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state.
+     * @return The ComposeView containing the recurring transactions screen.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,6 +49,11 @@ class ShowRecurringFragment : Fragment() {
         }
     }
 
+    /**
+     * Composable function that renders the screen listing recurring transactions.
+     * If the list is empty, it shows a placeholder message. It also handles the
+     * confirmation dialog for canceling a recurring transaction.
+     */
     @Composable
     fun RecurringTransactionsScreen() {
         val db = (requireActivity().application as MoneyGlitchApp).database
@@ -96,6 +114,14 @@ class ShowRecurringFragment : Fragment() {
         }
     }
 
+    /**
+     * Composable that renders a single recurring transaction inside a card.
+     * The background color varies depending on whether it is an income or expense.
+     * Includes a clickable icon for requesting cancellation.
+     *
+     * @param transaction The transaction to be displayed.
+     * @param onRequestCancel Callback function to invoke when the cancel icon is clicked.
+     */
     @Composable
     fun TransactionItem(transaction: Transaction, onRequestCancel: () -> Unit) {
         val backgroundColour = if (transaction.type == "income") {
